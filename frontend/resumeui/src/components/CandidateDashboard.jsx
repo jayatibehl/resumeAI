@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import "../App.css";
 
 export default function CandidateDashboard() {
 
@@ -15,24 +16,65 @@ export default function CandidateDashboard() {
 
   const [activeTab, setActiveTab] = useState("analysis");
 
-  const resumeName = localStorage.getItem("resume_name");
+  const [progressStep, setProgressStep] = useState(-1);
 
+  useEffect(() => {
+    const isFreshLogin = sessionStorage.getItem("fresh_login");
 
-  /* ------------------ UPLOAD ------------------ */
+    if (!isFreshLogin) {
+      localStorage.removeItem("matched_jobs");
+      localStorage.removeItem("resume_text");
+      localStorage.removeItem("resume_name");
+      localStorage.removeItem("skills");
+      localStorage.removeItem("roles");
+      localStorage.removeItem("experience");
+
+      sessionStorage.setItem("fresh_login", "true");
+      setStep("upload");
+    }
+  }, []);
+
+  useEffect(() => {
+    const storedResume = localStorage.getItem("resume_text");
+    const storedJobs = localStorage.getItem("matched_jobs");
+    const storedSkills = localStorage.getItem("skills");
+    const storedRoles = localStorage.getItem("roles");
+    const storedExp = localStorage.getItem("experience");
+
+    if (storedResume && storedJobs) {
+      setJobs(JSON.parse(storedJobs));
+      setSkills(JSON.parse(storedSkills || "[]"));
+      setRoles(JSON.parse(storedRoles || "[]"));
+      setExperience(storedExp || "");
+      setStep("results");
+    }
+  }, []);
+
+  useEffect(() => {
+    if (step === "analyzing") {
+
+      setProgressStep(0);
+
+      const timers = [
+        setTimeout(() => setProgressStep(0), 0),
+        setTimeout(() => setProgressStep(1), 1000),
+        setTimeout(() => setProgressStep(2), 2000),
+        setTimeout(() => setProgressStep(3), 3000),
+      ];
+
+      return () => timers.forEach(t => clearTimeout(t));
+    }
+  }, [step]);
 
   const handleUpload = async () => {
 
     if (!file) return;
 
-    // ✅ FIX: GET USER DATA
-    const email = localStorage.getItem("email");
-    const name = localStorage.getItem("name");
+    const token = localStorage.getItem("token");
 
-    console.log("EMAIL:", email);
-    console.log("NAME:", name);
-
-    if (!email || !name) {
-      alert("User not logged in properly");
+    if (!token) {
+      alert("Please login again");
+      window.location.href = "/";
       return;
     }
 
@@ -41,14 +83,13 @@ export default function CandidateDashboard() {
     const formData = new FormData();
     formData.append("file", file);
 
-    // ✅ FIX: SEND USER DATA TO BACKEND
-    formData.append("email", email);
-    formData.append("name", name);
-
     try {
 
       const res = await fetch("http://127.0.0.1:5000/api/resume/upload", {
         method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
         body: formData
       });
 
@@ -60,21 +101,17 @@ export default function CandidateDashboard() {
         return;
       }
 
-      // ✅ FIX 1: ALWAYS STORE CORRECT TEXT
       localStorage.setItem("resume_text", data.resume_text || "");
       localStorage.setItem("resume_name", file.name);
-
-      if (data.matching_jobs) {
-        localStorage.setItem("matched_jobs", JSON.stringify(data.matching_jobs));
-      }
+      localStorage.setItem("matched_jobs", JSON.stringify(data.matching_jobs || []));
+      localStorage.setItem("skills", JSON.stringify(data.analysis?.skills_found || []));
+      localStorage.setItem("roles", JSON.stringify(data.recommended_roles || []));
+      localStorage.setItem("experience", data.analysis?.experience_level || "");
 
       setRoles(data.recommended_roles || []);
       setJobs(data.matching_jobs || []);
-
-      if (data.analysis) {
-        setSkills(data.analysis.skills_found || []);
-        setExperience(data.analysis.experience_level || "Not specified");
-      }
+      setSkills(data.analysis?.skills_found || []);
+      setExperience(data.analysis?.experience_level || "Not specified");
 
       setStep("results");
 
@@ -84,8 +121,29 @@ export default function CandidateDashboard() {
     }
   };
 
+  const downloadReport = async () => {
+    const token = localStorage.getItem("token");
 
-  /* ------------------ SKILL GAP (FIXED) ------------------ */
+    try {
+      const res = await fetch("http://127.0.0.1:5000/api/resume/download-report", {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      });
+
+      const data = await res.json();
+
+      if (data.download_url) {
+        window.open(data.download_url, "_blank");
+      } else {
+        alert("Failed to generate report");
+      }
+
+    } catch {
+      alert("Server error");
+    }
+  };
 
   const handleJobClick = async (job) => {
 
@@ -96,12 +154,15 @@ export default function CandidateDashboard() {
       return;
     }
 
+    const token = localStorage.getItem("token");
+
     try {
 
       const res = await fetch("http://127.0.0.1:5000/api/skills/gap", {
         method: "POST",
         headers: {
-          "Content-Type": "application/json"
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`
         },
         body: JSON.stringify({
           resume_text: storedResume,
@@ -111,7 +172,7 @@ export default function CandidateDashboard() {
 
       const data = await res.json();
 
-      setSkillGap(data);
+      setSkillGap(data || null);
       setActiveTab("skillgap");
 
     } catch {
@@ -119,13 +180,36 @@ export default function CandidateDashboard() {
     }
   };
 
+  // APPLY FUNCTION ADDED
+  const handleApply = async (jobId) => {
+    try {
+      const res = await fetch("http://127.0.0.1:5000/api/jobs/apply", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${localStorage.getItem("token")}`
+        },
+        body: JSON.stringify({ job_id: jobId })
+      });
 
-  /* ------------------ RESET ------------------ */
+      const data = await res.json();
+      alert(data.message || "Applied");
+
+    } catch {
+      alert("Error applying to job");
+    }
+  };
 
   const handleReset = () => {
     localStorage.removeItem("resume_text");
     localStorage.removeItem("resume_name");
     localStorage.removeItem("matched_jobs");
+    localStorage.removeItem("skills");
+    localStorage.removeItem("roles");
+    localStorage.removeItem("experience");
+
+    sessionStorage.removeItem("fresh_login");
+
     setFile(null);
     setStep("upload");
     setRoles([]);
@@ -135,14 +219,13 @@ export default function CandidateDashboard() {
     setSkillGap(null);
   };
 
+  const validJobs = (jobs || []).filter(j => (j.match_score || 0) > 0);
 
   return (
     <main className="main-content">
 
-      {/* ------------------ UPLOAD ------------------ */}
       {step === "upload" && (
         <div className="upload-card">
-
           <h2>Analyze Your Career Path</h2>
 
           <label className="drag-area">
@@ -158,172 +241,131 @@ export default function CandidateDashboard() {
           <button className="primary-btn" onClick={handleUpload}>
             Start AI Analysis
           </button>
-
         </div>
       )}
 
-
-      {/* ------------------ ANALYZING ------------------ */}
       {step === "analyzing" && (
         <div className="upload-card">
-          <h3>Analyzing Resume...</h3>
+          <div className="spinner"></div>
+          <h3>Analyzing your resume...</h3>
+
+          <div className="steps">
+            {progressStep >= 0 && <p style={{ color: "#1e3a8a" }}>Extracting resume text...</p>}
+            {progressStep >= 1 && <p style={{ color: "#1e3a8a" }}>Identifying skills...</p>}
+            {progressStep >= 2 && <p style={{ color: "#1e3a8a" }}>Evaluating experience...</p>}
+            {progressStep >= 3 && <p style={{ color: "#1e3a8a" }}>Matching job roles...</p>}
+          </div>
         </div>
       )}
 
-
-      {/* ------------------ RESULTS ------------------ */}
       {step === "results" && (
-
         <div className="results-grid">
 
-          {/* Resume */}
           <div className="stat-card" style={{ gridColumn: "1 / -1" }}>
-
             <h3>Uploaded Resume</h3>
 
-            {resumeName ? (
-              <>
-                <a
-                  href={`http://127.0.0.1:5000/uploads/${resumeName}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  style={{
-                    display: "inline-block",
-                    marginTop: "10px",
-                    padding: "10px 16px",
-                    background: "#5b6cff",
-                    borderRadius: "8px",
-                    textDecoration: "none",
-                    color: "white",
-                    fontWeight: "500"
-                  }}
-                >
-                  📄 {resumeName}
-                </a>
+            <p
+              style={{ color: "#60a5fa", cursor: "pointer", textDecoration: "underline" }}
+              onClick={() => {
+                if (file) {
+                  const url = URL.createObjectURL(file);
+                  window.open(url, "_blank");
+                } else {
+                  alert("Resume preview not available. Please upload again.");
+                }
+              }}
+            >
+              {localStorage.getItem("resume_name")}
+            </p>
 
-                <br /><br />
+            <br /><br />
 
-                <button
-                  onClick={handleReset}
-                  style={{
-                    padding: "10px 16px",
-                    background: "#5b6cff",
-                    border: "none",
-                    borderRadius: "8px",
-                    color: "white",
-                    cursor: "pointer"
-                  }}
-                >
-                  Upload Another Resume
-                </button>
-              </>
-            ) : (
-              <p>No resume uploaded</p>
-            )}
+            <button onClick={handleReset}>
+              Upload Another Resume
+            </button>
 
+            <br /><br />
+
+            <button onClick={downloadReport}>
+              Download Report
+            </button>
           </div>
 
-
-          {/* ANALYSIS */}
           {activeTab === "analysis" && (
-
             <>
               <div className="stat-card">
                 <h3>Detected Skills</h3>
-
                 <div className="tag-container">
-                  {skills.map((s, i) => (
-                    <span key={i} className="tag">{s}</span>
-                  ))}
+                  {skills
+                    .flatMap(s => Array.isArray(s) ? s : [s])
+                    .map(s => s.trim())
+                    .filter(s => s.length > 1)
+                    .map((s, i) => (
+                      <span key={i} className="tag">{s}</span>
+                    ))}
                 </div>
               </div>
-
 
               <div className="stat-card">
                 <h3>Experience Level</h3>
                 <p>{experience}</p>
               </div>
 
-
-              {/* ROLES */}
               <div className="stat-card">
                 <h3>AI Suggested Roles</h3>
+                {roles.map((r, i) => {
+                  const roleName = typeof r === "object" ? r.role : r;
+                  const score = typeof r === "object" ? r.score : null;
 
-                {roles.length === 0 && <p>No roles detected</p>}
-
-                {roles.map((r, i) => (
-                  <div
-                    key={i}
-                    style={{
-                      display: "flex",
-                      justifyContent: "space-between",
-                      alignItems: "center",
-                      padding: "10px 0",
-                      borderBottom: "1px solid rgba(255,255,255,0.08)"
-                    }}
-                  >
-                    <span className="tag">{r.role}</span>
-
-                    <span style={{ color: "#5b6cff", fontWeight: "600" }}>
-                      {r.score}%
-                    </span>
-                  </div>
-                ))}
+                  return (
+                    <div key={i}>
+                      <span>{roleName}</span>
+                      {score !== null && score !== undefined
+                        ? ` - ${Number(score).toFixed(2)}%`
+                        : ""}
+                    </div>
+                  );
+                })}
               </div>
             </>
           )}
 
-
-          {/* JOB MATCHES */}
           {activeTab === "jobs" && (
             <div className="stat-card">
-
               <h3>Matching Jobs</h3>
 
-              {jobs.map((j, i) => (
-                <div
-                  key={i}
-                  onClick={() => handleJobClick(j)}
-                  style={{ cursor: "pointer", marginBottom: "10px" }}
-                >
-                  <h4>{j.title}</h4>
+              {validJobs.length === 0 && <p>No relevant jobs found</p>}
 
-                  <p>Match: {Number(j.match_score).toFixed(2)}%</p>
+              {validJobs.map((j, i) => (
+                <div key={i} style={{ marginBottom: "10px" }}>
+
+                  <div onClick={() => handleJobClick(j)}>
+                    <h4>{j.title}</h4>
+                    <p>{j.match_score}%</p>
+                  </div>
+
+                  <button
+                    className="secondary-btn"
+                    onClick={() => handleApply(j.id)}
+                  >
+                    Apply
+                  </button>
+
                 </div>
               ))}
-
             </div>
           )}
 
-
-          {/* SKILL GAP */}
           {activeTab === "skillgap" && skillGap && (
             <div className="stat-card">
+              <h3>Skill Gap</h3>
 
-              <h3>Skill Gap Analysis</h3>
+              <p>Score: {skillGap.match_score || 0}%</p>
 
-              <h4>Match Score: {skillGap.match_score}%</h4>
-
-              <h4>Matched Skills</h4>
-              <div className="tag-container">
-                {skillGap.matched_skills?.map((s, i) => (
-                  <span key={i} className="tag">{s}</span>
-                ))}
-              </div>
-
-              <h4>Missing Skills</h4>
-              <div className="tag-container">
-                {skillGap.missing_skills?.map((s, i) => (
-                  <span
-                    key={i}
-                    className="tag"
-                    style={{ background: "#ff4d4f" }}
-                  >
-                    {s}
-                  </span>
-                ))}
-              </div>
-
+              <p>Missing Skills:</p>
+              {(skillGap.missing_skills || []).map((s, i) => (
+                <span key={i}>{s}</span>
+              ))}
             </div>
           )}
 

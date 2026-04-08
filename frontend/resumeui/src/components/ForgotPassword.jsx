@@ -1,68 +1,55 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
-import "./Login.css"; 
 
 export default function ForgotPassword() {
   const [email, setEmail] = useState("");
-  const [loading, setLoading] = useState(false);
-  const [message, setMessage] = useState({ text: "", type: "" });
-  const navigate = useNavigate();
+  const [message, setMessage] = useState("");
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setLoading(true);
-    setMessage({ text: "", type: "" });
-
+  const handleSubmit = async () => {
     try {
       const res = await fetch("http://127.0.0.1:5000/api/forgot-password", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+        },
         body: JSON.stringify({ email }),
       });
+
       const data = await res.json();
-      
+
+      // ✅ Show proper message
       if (res.ok) {
-        setMessage({ text: "Reset link sent! Please check your email inbox.", type: "success" });
+        setMessage("Check your mail for reset password link");
       } else {
-        setMessage({ text: data.error || "User not found.", type: "error" });
+        setMessage(data.error || "Something went wrong");
       }
+
     } catch (err) {
-      setMessage({ text: "Server connection failed.", type: "error" });
-    } finally {
-      setLoading(false);
+      setMessage("Server error. Please try again.");
     }
   };
 
   return (
     <div className="auth-container">
       <div className="auth-card">
-        <h2>Reset Password</h2>
-        <p className="subtitle">Enter your email to receive a recovery link</p>
-        
-        <form onSubmit={handleSubmit}>
-          <input
-            className="auth-input"
-            type="email"
-            placeholder="example@gmail.com"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            required
-          />
-          
-          <button type="submit" className="primary-btn" disabled={loading}>
-            {loading ? "Sending..." : "Send Reset Link"}
-          </button>
-        </form>
+        <h2>Forgot Password</h2>
+        <p>Enter your registered email to reset password</p>
 
-        {message.text && (
-          <p className={`status-msg ${message.type === "error" ? "error-text" : "success-text"}`}>
-            {message.text}
+        <input
+          type="email"
+          placeholder="Email"
+          onChange={(e) => setEmail(e.target.value)}
+        />
+
+        <button className="primary-btn" onClick={handleSubmit}>
+          Submit
+        </button>
+
+        {/* ✅ Show message on UI instead of alert */}
+        {message && (
+          <p style={{ marginTop: "10px", color: "#4CAF50" }}>
+            {message}
           </p>
         )}
-
-        <p className="toggle-text" onClick={() => navigate("/")} style={{cursor: 'pointer', marginTop: '15px'}}>
-          Back to Login
-        </p>
       </div>
     </div>
   );

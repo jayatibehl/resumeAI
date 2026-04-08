@@ -1,32 +1,14 @@
 import pandas as pd
 import os
+import re
 
 from ai.embedding_engine import get_embedding, cosine_similarity
 from ai.skill_extractor import extract_skills
 
-# ------------------ LOAD DATA ------------------
+# ------------------ LOAD CSV ------------------
 
 DATA_PATH = os.path.join(os.path.dirname(__file__), "../data/job_roles.csv")
 jobs_df = pd.read_csv(DATA_PATH)
-
-# ------------------ GLOBAL CACHE ------------------
-
-job_embeddings = None
-
-
-def load_job_embeddings():
-    global job_embeddings
-
-    if job_embeddings is None:
-        job_embeddings = []
-
-        for _, row in jobs_df.iterrows():
-            # 🔥 Combine role + description (better semantic context)
-            combined_text = f"{row['role']} {row['description']}"
-            emb = get_embedding(combined_text)
-            job_embeddings.append(emb)
-
-    return job_embeddings
 
 
 # ------------------ CLEANING ------------------
@@ -48,80 +30,63 @@ def clean_resume_text(text):
     ]
 
     for word in stopwords:
-        text = text.replace(word, "")
+        text = re.sub(rf"\b{word}\b", "", text)
 
     return text
 
 
-# ------------------ SKILL BONUS ------------------
+# ------------------ SKILL MATCH ------------------
 
-def skill_overlap_bonus(resume_skills, role_description):
+def skill_overlap(resume_skills, role_description):
     role_desc = role_description.lower()
-
-    overlap = sum(1 for skill in resume_skills if skill in role_desc)
-
-    if len(resume_skills) == 0:
-        return 0
-
-    # 🔥 normalized + stronger weight
-    return (overlap / len(resume_skills)) * 0.15
+    return sum(1 for skill in resume_skills if skill in role_desc)
 
 
 # ------------------ MAIN FUNCTION ------------------
 
 def recommend_roles(resume_text):
 
-    # Step 1: Clean resume
+    # clean resume
     resume_text = clean_resume_text(resume_text)
 
-    # Step 2: Extract skills
+    # extract skills
     resume_skills = extract_skills(resume_text)
 
-    # Step 3: Hybrid input (text + skills)
+    # prepare embedding input
     resume_input = resume_text + " " + " ".join(resume_skills)
-
-    # Step 4: Get embedding
     resume_embedding = get_embedding(resume_input)
-
-    # Step 5: Load job embeddings (cached)
-    job_embeddings = load_job_embeddings()
 
     scores = []
 
-    # Step 6: Compare with each job
-    for i, job_vec in enumerate(job_embeddings):
+    for _, row in jobs_df.iterrows():
 
-        sim = cosine_similarity(resume_embedding, job_vec)
+        role = row["role"]
+        description = row["description"]
 
-        role_description = jobs_df.iloc[i]["description"]
+        overlap = skill_overlap(resume_skills, description)
 
-        bonus = skill_overlap_bonus(resume_skills, role_description)
+        # strict filter
+        if overlap == 0:
+            continue
 
-        final_score = float(sim) + float(bonus)
+        job_text = f"{role} {description}"
+        job_embedding = get_embedding(job_text)
 
-        # 🔥 Normalize from [-1,1] → [0,1]
+        sim = float(cosine_similarity(resume_embedding, job_embedding))
+
+        ratio = overlap / len(resume_skills) if len(resume_skills) > 0 else 0
+
+        final_score = (0.7 * sim) + (0.3 * ratio)
         final_score = (final_score + 1) / 2
 
+        if final_score < 0.35:
+            continue
+
         scores.append({
-            "role": jobs_df.iloc[i]["role"],
-            "score": round(final_score * 100, 2)
+            "role": role,
+            "score": float(round(final_score * 100, 2))
         })
 
-    # Step 7: Sort by score
     scores = sorted(scores, key=lambda x: x["score"], reverse=True)
 
-    # Step 8: Remove duplicates + top 5
-    seen = set()
-    unique_scores = []
-
-    for item in scores:
-        role = item["role"]
-
-        if role not in seen:
-            seen.add(role)
-            unique_scores.append(item)
-
-        if len(unique_scores) == 5:
-            break
-
-    return unique_scores
+    return scores[:5]

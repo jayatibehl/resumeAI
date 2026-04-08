@@ -22,17 +22,15 @@ skill_embeddings = model.encode(SKILLS, convert_to_tensor=True)
 
 
 # -----------------------------
-# ✅ FILTER INVALID SKILLS
+# FILTER INVALID SKILLS
 # -----------------------------
 def is_valid_skill(skill, text):
     skill = skill.lower()
     text = text.lower()
 
-    # ❌ Remove 1-letter noise (except C)
     if len(skill) == 1 and skill != "c":
         return False
 
-    # ❌ Handle ambiguous short skills
     if skill in ["go", "r"]:
         pattern = r'\b' + re.escape(skill) + r'\b'
         return re.search(pattern, text) is not None
@@ -41,8 +39,7 @@ def is_valid_skill(skill, text):
 
 
 # -----------------------------
-# 1️⃣ LIST-BASED EXTRACTION
-# Handles: "Languages: C, C++, Java"
+# LIST-BASED EXTRACTION
 # -----------------------------
 def extract_list_based_skills(text):
 
@@ -71,7 +68,7 @@ def extract_list_based_skills(text):
 
 
 # -----------------------------
-# 2️⃣ NLP PHRASE EXTRACTION
+# NLP PHRASE EXTRACTION
 # -----------------------------
 def extract_candidate_phrases(text):
 
@@ -94,7 +91,7 @@ def extract_candidate_phrases(text):
 
 
 # -----------------------------
-# 3️⃣ SEMANTIC MATCHING (AI)
+# SEMANTIC MATCHING
 # -----------------------------
 def match_skills_semantically(phrases):
 
@@ -110,40 +107,42 @@ def match_skills_semantically(phrases):
         scores = util.cos_sim(phrase_emb, skill_embeddings)[0]
         best_idx = scores.argmax()
 
-        if scores[best_idx] > 0.60:
+        # threshold relaxed from 0.60 → 0.55
+        if scores[best_idx] > 0.55:
             detected_skills.add(SKILLS[best_idx])
 
     return list(detected_skills)
 
 
 # -----------------------------
-# 4️⃣ MAIN FUNCTION
+# MAIN FUNCTION
 # -----------------------------
 def extract_skills(resume_text):
 
     text = resume_text.lower()
     detected_skills = set()
 
-    # ✅ STEP 1 — DIRECT MATCH (FAST + ACCURATE)
+    # STEP 1 — DIRECT MATCH (FIXED)
     for skill in SKILLS:
-        if skill in text:
+        pattern = r'\b' + re.escape(skill) + r'\b'
+        if re.search(pattern, text):
             detected_skills.add(skill)
 
-    # ✅ STEP 2 — LIST EXTRACTION
+    # STEP 2 — LIST EXTRACTION
     list_skills = extract_list_based_skills(resume_text)
 
     for skill in list_skills:
         if skill in SKILLS:
             detected_skills.add(skill)
 
-    # ✅ STEP 3 — NLP + AI MATCHING
+    # STEP 3 — NLP + SEMANTIC MATCHING
     phrases = extract_candidate_phrases(resume_text)
     semantic_skills = match_skills_semantically(phrases)
 
     for skill in semantic_skills:
         detected_skills.add(skill)
 
-    # ✅ STEP 4 — FINAL CLEANING (🔥 FIX FOR go / r ISSUE)
+    # STEP 4 — FINAL CLEANING
     cleaned = []
 
     for skill in detected_skills:
@@ -151,22 +150,3 @@ def extract_skills(resume_text):
             cleaned.append(skill)
 
     return cleaned
-
-
-# -----------------------------
-# 5️⃣ EXPERIENCE DETECTION
-# -----------------------------
-def detect_experience(text):
-
-    text = text.lower()
-
-    matches = re.findall(r'(\d+)\+?\s*(year|years|yr|yrs)', text)
-
-    if matches:
-        years = max([int(m[0]) for m in matches])
-        return f"{years}+ years"
-
-    if "intern" in text or "internship" in text:
-        return "Internship Experience"
-
-    return "Fresher"

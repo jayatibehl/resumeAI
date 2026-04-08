@@ -1,197 +1,252 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { Eye, EyeOff } from "lucide-react"; 
 import "./Login.css";
 
 export default function Login() {
+
   const navigate = useNavigate();
+
+  // ✅ FIXED: role-based redirect instead of always recruiter
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+    const role = localStorage.getItem("role");
+
+    if (token && role) {
+      if (role === "candidate") {
+        navigate("/candidate", { replace: true });
+      } else if (role === "recruiter") {
+        navigate("/recruiter", { replace: true });
+      } else if (role === "admin") {
+        navigate("/admin", { replace: true });
+      }
+    }
+  }, []);
+
   const [isRegister, setIsRegister] = useState(false);
-  const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
-  const [strength, setStrength] = useState({ label: "", color: "#ccc", width: "0%" });
 
   const [form, setForm] = useState({
-    name: "", email: "", phone: "", identifier: "", password: "", role: "candidate"
+    name: "",
+    email: "",
+    password: "",
+    role: "candidate"
   });
 
-  useEffect(() => {
-    setForm({ name: "", email: "", phone: "", identifier: "", password: "", role: "candidate" });
-    setShowPassword(false);
-  }, [isRegister]);
+  // ================= PASSWORD STRENGTH =================
+  const getPasswordStrength = (password) => {
+    let score = 0;
 
-  useEffect(() => {
-    if (!isRegister) return;
-    const pass = form.password;
-    if (!pass) {
-      setStrength({ label: "", color: "#ccc", width: "0%" });
+    if (password.length >= 8) score++;
+    if (/[A-Z]/.test(password)) score++;
+    if (/[0-9]/.test(password)) score++;
+    if (/[@$!%*?&]/.test(password)) score++;
+
+    return score;
+  };
+
+  const strength = getPasswordStrength(form.password || "");
+
+  const getColor = () => {
+    if (strength <= 1) return "red";
+    if (strength === 2) return "orange";
+    if (strength === 3) return "yellow";
+    if (strength === 4) return "green";
+  };
+
+  const getWidth = () => {
+    return `${(strength / 4) * 100}%`;
+  };
+
+  const isStrong = strength === 4;
+
+  // ================= SUBMIT =================
+  const submit = async () => {
+
+    if (isRegister && !isStrong) {
+      alert("Please create a strong password");
       return;
     }
 
-    let score = 0;
-    if (pass.length >= 8) score++;
-    if (/[A-Z]/.test(pass)) score++;
-    if (/[0-9]/.test(pass)) score++;
-    if (/[@$!%*?&]/.test(pass)) score++;
-
-    const levels = [
-      { label: "Too Weak", color: "#ef4444", width: "25%" },
-      { label: "Weak", color: "#f59e0b", width: "50%" },
-      { label: "Strong", color: "#10b981", width: "75%" },
-      { label: "Very Strong", color: "#6366f1", width: "100%" }
-    ];
-    
-    setStrength(score > 0 ? levels[score - 1] : levels[0]);
-  }, [form.password, isRegister]);
-
-  const submit = async () => {
-    if (isRegister) {
-      if (!/[@$!%*?&]/.test(form.password)) return alert("Add a special character!");
-      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) return alert("Invalid Email");
-      if (!/^[6-9]\d{9}$/.test(form.phone)) return alert("Invalid Phone");
-    }
-
-    setLoading(true);
-    const baseUrl = "http://localhost:5000/api"; 
-    const url = isRegister ? `${baseUrl}/register` : `${baseUrl}/login`;
-    const payload = isRegister 
-      ? { name: form.name, email: form.email, phone: form.phone, password: form.password, role: form.role }
-      : { identifier: form.identifier, password: form.password };
+    const url = isRegister
+      ? "http://127.0.0.1:5000/api/register"
+      : "http://127.0.0.1:5000/api/login";
 
     try {
       const res = await fetch(url, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload)
+        body: JSON.stringify(form)
       });
+
       const data = await res.json();
-      if (!res.ok) throw new Error(data.error || "Action failed");
 
+      // ================= REGISTER =================
       if (isRegister) {
-        alert("Account created successfully!");
-        setIsRegister(false); 
-        setForm(prev => ({ ...prev, identifier: form.email, password: form.password }));
-      } else {
-        saveSession(data);
+        if (data.message) {
+          alert("Account created successfully. Please login.");
+          setIsRegister(false);
+        } else {
+          alert(data.error || "Registration failed");
+        }
+        return;
       }
-    } catch (err) {
-      alert(err.message);
-    } finally {
-      setLoading(false);
-    }
-  };
 
-  const saveSession = (data) => {
-    localStorage.clear();
-    localStorage.setItem("token", data.token);
-    localStorage.setItem("role", data.role);
-    localStorage.setItem("name", data.name);
-    localStorage.setItem("email", data.email);
-    navigate(data.role === "candidate" ? "/candidate" : "/recruiter");
+      // ================= LOGIN =================
+      if (data.role) {
+
+        localStorage.setItem("token", data.token);
+        localStorage.setItem("role", data.role);
+        localStorage.setItem("name", data.name);
+        localStorage.setItem("email", data.email);
+
+        if (data.role === "candidate") {
+          navigate("/candidate");
+        } else if (data.role === "recruiter") {
+          navigate("/recruiter");
+        } else if (data.role === "admin") {
+          navigate("/admin");
+        }
+
+      } else {
+        alert(data.error || "Invalid login");
+      }
+
+    } catch (err) {
+      alert("Server error");
+    }
   };
 
   return (
     <div className="auth-container">
       <div className="auth-card">
+
         <h2>{isRegister ? "Create Account" : "Welcome Back"}</h2>
-        
-        <form onSubmit={(e) => { e.preventDefault(); submit(); }} autoComplete="off">
-          {isRegister && (
-            <input className="auth-input" type="text" placeholder="Full Name" value={form.name} required
-              onChange={(e) => setForm(prev => ({ ...prev, name: e.target.value }))} />
-          )}
 
-          {isRegister ? (
-            <>
-              <input className="auth-input" type="email" placeholder="Email Address" value={form.email} required
-                onChange={(e) => setForm(prev => ({ ...prev, email: e.target.value }))} />
-              <input className="auth-input" type="tel" placeholder="Phone Number" value={form.phone} required
-                onChange={(e) => setForm(prev => ({ ...prev, phone: e.target.value }))} />
-            </>
-          ) : (
-            <input className="auth-input" type="text" placeholder="Email or Phone" value={form.identifier} required
-              onChange={(e) => setForm(prev => ({ ...prev, identifier: e.target.value }))} />
-          )}
+        <p className="subtitle">
+          {isRegister
+            ? "Create your ResumeAI account"
+            : "Login to access your dashboard"}
+        </p>
 
-          <div className="password-wrapper" style={{ position: "relative" }}>
-            <input
-              className="auth-input"
-              type={showPassword ? "text" : "password"}
-              placeholder="Password"
-              value={form.password}
-              required
-              onChange={(e) => setForm(prev => ({ ...prev, password: e.target.value }))}
-            />
-            <span onClick={() => setShowPassword(!showPassword)}
-              style={{ position: "absolute", right: "12px", top: "12px", cursor: "pointer", color: "#666" }}>
-              {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
-            </span>
-            
-            {isRegister && form.password && (
-              <div className="strength-section" style={{ marginTop: '12px' }}>
-                {/* Strength Bar */}
-                <div className="strength-meter-bg" style={{ height: '5px', borderRadius: '10px', backgroundColor: '#e2e8f0', marginBottom: '10px' }}>
-                  <div className="strength-bar" style={{ width: strength.width, backgroundColor: strength.color, height: '100%', borderRadius: '10px', transition: '0.4s ease' }}></div>
-                </div>
-                
-                {/* 📋 Modern Pill-style Checklist */}
-                <div className="password-checklist" style={{ 
-                  display: 'flex', 
-                  flexWrap: 'wrap', 
-                  gap: '8px', 
-                  padding: '5px 0'
-                }}>
-                  {[
-                    { label: "Min. 8 Characters", met: form.password.length >= 8 },
-                    { label: "Uppercase", met: /[A-Z]/.test(form.password) },
-                    { label: "Number", met: /[0-9]/.test(form.password) },
-                    { label: "Special (@$!)", met: /[@$!%*?&]/.test(form.password) }
-                  ].map((item, index) => (
-                    <div key={index} style={{ 
-                      display: 'flex', 
-                      alignItems: 'center', 
-                      gap: '5px', 
-                      fontSize: '0.7rem', 
-                      padding: '4px 10px',
-                      borderRadius: '20px',
-                      border: `1px solid ${item.met ? '#10b981' : '#e2e8f0'}`,
-                      backgroundColor: item.met ? '#f0fdf4' : '#fff',
-                      color: item.met ? '#10b981' : '#94a3b8',
-                      transition: '0.3s'
-                    }}>
-                      <span style={{ fontSize: '10px' }}>{item.met ? "✔" : "○"}</span>
-                      <span style={{ fontWeight: '500' }}>{item.label}</span>
-                    </div>
-                  ))}
-                </div>
-              </div>
+        {isRegister && (
+          <input
+            type="text"
+            placeholder="Full Name"
+            onChange={(e) =>
+              setForm({ ...form, name: e.target.value })
+            }
+          />
+        )}
+
+        <input
+          type="email"
+          placeholder="Email Address"
+          onChange={(e) =>
+            setForm({ ...form, email: e.target.value })
+          }
+        />
+
+        {/* ================= PASSWORD FIELD ================= */}
+        <div style={{ position: "relative" }}>
+          <input
+            type={showPassword ? "text" : "password"}
+            placeholder="Password"
+            onChange={(e) =>
+              setForm({ ...form, password: e.target.value })
+            }
+          />
+
+          <span
+            onClick={() => setShowPassword(!showPassword)}
+            style={{
+              position: "absolute",
+              right: "12px",
+              top: "50%",
+              transform: "translateY(-50%)",
+              cursor: "pointer",
+              opacity: 0.7
+            }}
+          >
+            {showPassword ? (
+              <svg width="20" height="20" fill="white" viewBox="0 0 24 24">
+                <path d="M12 5c-7 0-10 7-10 7s3 7 10 7 10-7 10-7-3-7-10-7zm0 12c-3 0-5-2-5-5s2-5 5-5 5 2 5 5-2 5-5 5z"/>
+              </svg>
+            ) : (
+              <svg width="20" height="20" fill="white" viewBox="0 0 24 24">
+                <path d="M2 5l20 14M12 5c-7 0-10 7-10 7s3 7 10 7 10-7 10-7-3-7-10-7z"/>
+              </svg>
             )}
-          </div>
+          </span>
+        </div>
 
-          {!isRegister && (
-            <p className="forgot-pw-link" onClick={() => navigate("/forgot-password")} 
-               style={{ cursor: "pointer", textAlign: 'right', fontSize: '0.85rem', color: '#6366f1', margin: '10px 0' }}>
-              Forgot Password?
-            </p>
-          )}
+        {/* ================= PASSWORD STRENGTH ================= */}
+        {isRegister && (
+          <>
+            <div className="password-strength-bar">
+              <div
+                className="strength-fill"
+                style={{
+                  width: getWidth(),
+                  backgroundColor: getColor(),
+                }}
+              ></div>
+            </div>
 
-          {isRegister && (
-            <select className="auth-select" value={form.role} onChange={(e) => setForm(prev => ({ ...prev, role: e.target.value }))}>
-              <option value="candidate">I am a Candidate</option>
-              <option value="recruiter">I am a Recruiter</option>
-            </select>
-          )}
+            <div className="password-rules single-line">
+              <span className={form.password.length >= 8 ? "valid" : ""}>Min 8</span>
+              <span className={/[A-Z]/.test(form.password) ? "valid" : ""}>Uppercase</span>
+              <span className={/[0-9]/.test(form.password) ? "valid" : ""}>Number</span>
+              <span className={/[@$!%*?&]/.test(form.password) ? "valid" : ""}>Special</span>
+            </div>
+          </>
+        )}
 
-          <button type="submit" className="primary-btn" disabled={loading} style={{ marginTop: '10px' }}>
-            {loading ? "Processing..." : (isRegister ? "Sign Up" : "Login")}
-          </button>
-        </form>
+        {/* ================= FORGOT PASSWORD ================= */}
+        {!isRegister && (
+          <p
+            style={{
+              textAlign: "right",
+              marginTop: "6px",
+              fontSize: "14px",
+              color: "#5b6cff",
+              cursor: "pointer"
+            }}
+            onClick={() => navigate("/forgot-password")}
+          >
+            Forgot Password?
+          </p>
+        )}
+
+        {isRegister && (
+          <select
+            onChange={(e) =>
+              setForm({ ...form, role: e.target.value })
+            }
+          >
+            <option value="candidate">Candidate</option>
+            <option value="recruiter">Recruiter</option>
+          </select>
+        )}
+
+        <button
+          className="primary-btn"
+          onClick={submit}
+          disabled={isRegister && !isStrong}
+          style={{
+            opacity: isRegister && !isStrong ? 0.6 : 1,
+            cursor: isRegister && !isStrong ? "not-allowed" : "pointer"
+          }}
+        >
+          {isRegister ? "Create Account" : "Login"}
+        </button>
 
         <p className="toggle-text">
-          {isRegister ? "Already have an account?" : "New to ResumeAI?"}
-          <span className="toggle-link" onClick={() => setIsRegister(!isRegister)} style={{ cursor: "pointer", color: '#6366f1', fontWeight: 'bold' }}>
+          {isRegister ? "Already have an account?" : "New here?"}
+          <span onClick={() => setIsRegister(!isRegister)}>
             {isRegister ? " Login" : " Create Account"}
           </span>
         </p>
+
       </div>
     </div>
   );

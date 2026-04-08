@@ -1,9 +1,21 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 export default function ResumeUpload({ setResult }) {
 
   const [file, setFile] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [step, setStep] = useState(0);
+
+  // step animation for parsing visualization
+  useEffect(() => {
+    if (loading) {
+      setStep(0);
+      const interval = setInterval(() => {
+        setStep((prev) => (prev < 3 ? prev + 1 : prev));
+      }, 800);
+      return () => clearInterval(interval);
+    }
+  }, [loading]);
 
   const handleUpload = async () => {
 
@@ -12,26 +24,16 @@ export default function ResumeUpload({ setResult }) {
       return;
     }
 
-    // 🔥 GET USER DATA FIRST (IMPORTANT)
-    const email = localStorage.getItem("email");
-    const name = localStorage.getItem("name");
+    const token = localStorage.getItem("token");
 
-    // 🚨 SAFETY CHECK
-    if (!email || !name) {
-      alert("User not logged in properly");
+    if (!token) {
+      alert("Session expired. Please login again.");
+      window.location.href = "/";
       return;
     }
 
     const formData = new FormData();
     formData.append("file", file);
-
-    // 🔥 SEND TO BACKEND
-    formData.append("email", email);
-    formData.append("name", name);
-
-    // 🔍 DEBUG (you SHOULD see this in console)
-    console.log("EMAIL:", email);
-    console.log("NAME:", name);
 
     setLoading(true);
 
@@ -39,18 +41,28 @@ export default function ResumeUpload({ setResult }) {
 
       const res = await fetch("http://127.0.0.1:5000/api/resume/upload", {
         method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
         body: formData
       });
+
+      // handle unauthorized
+      if (res.status === 401) {
+        alert("Session expired. Please login again.");
+        localStorage.clear();
+        window.location.href = "/";
+        return;
+      }
 
       const data = await res.json();
 
       if (!res.ok) {
-        setLoading(false);
         alert(data.error || "Upload failed");
         return;
       }
 
-      // ✅ STORE DATA
+      // store results
       localStorage.setItem("resume_text", data.resume_text || "");
       localStorage.setItem("resume_name", file.name);
 
@@ -59,12 +71,12 @@ export default function ResumeUpload({ setResult }) {
       }
 
       setResult(data);
-      setLoading(false);
 
     } catch (err) {
-      setLoading(false);
       console.error(err);
       alert("Server error");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -82,6 +94,32 @@ export default function ResumeUpload({ setResult }) {
       <button onClick={handleUpload} disabled={loading}>
         {loading ? "Analyzing..." : "Upload & Analyze"}
       </button>
+
+      {/* parsing visualization */}
+      {loading && (
+        <div className="analysis-loader">
+
+          <div className="spinner"></div>
+
+          <h3>Analyzing your resume...</h3>
+
+          <div className="steps">
+            <p className={step >= 0 ? "active" : ""}>
+              Extracting resume text...
+            </p>
+            <p className={step >= 1 ? "active" : ""}>
+              Identifying skills...
+            </p>
+            <p className={step >= 2 ? "active" : ""}>
+              Evaluating experience...
+            </p>
+            <p className={step >= 3 ? "active" : ""}>
+              Matching job roles...
+            </p>
+          </div>
+
+        </div>
+      )}
 
     </div>
   );

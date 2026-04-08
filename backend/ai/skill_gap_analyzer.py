@@ -8,6 +8,25 @@ def normalize(skill):
     return skill.lower().strip()
 
 
+# ------------------ EXPERIENCE GAP ------------------
+
+def detect_experience_gap(resume_text, job_description):
+    resume_text = resume_text.lower()
+    job_description = job_description.lower()
+
+    gap = []
+
+    # internship requirement
+    if "internship" in job_description and "intern" not in resume_text:
+        gap.append("internship experience")
+
+    # general experience requirement
+    if "experience" in job_description and "experience" not in resume_text:
+        gap.append("relevant work experience")
+
+    return gap
+
+
 # ------------------ MATCH CHECK ------------------
 
 def is_skill_matched(job_skill, resume_skills, resume_text, threshold=0.6):
@@ -15,11 +34,11 @@ def is_skill_matched(job_skill, resume_skills, resume_text, threshold=0.6):
     job_skill = normalize(job_skill)
     resume_text = resume_text.lower()
 
-    # ✅ 1. Direct text match (VERY IMPORTANT FIX)
+    # direct text match
     if job_skill in resume_text:
         return True
 
-    # ✅ 2. Exact extracted match
+    # exact extracted match
     if job_skill in resume_skills:
         return True
 
@@ -35,7 +54,6 @@ def is_skill_matched(job_skill, resume_skills, resume_text, threshold=0.6):
                 return True
 
     except:
-        # fallback if embedding fails
         pass
 
     return False
@@ -45,7 +63,7 @@ def is_skill_matched(job_skill, resume_skills, resume_text, threshold=0.6):
 
 def analyze_skill_gap(resume_text, job_description):
 
-    # 🔥 STEP 1: Extract resume skills
+    # extract resume skills
     resume_skills_raw = extract_skills(resume_text)
 
     if not resume_skills_raw:
@@ -56,7 +74,7 @@ def analyze_skill_gap(resume_text, job_description):
     ]))
 
 
-    # 🔥 STEP 2: Extract job skills
+    # extract job skills
     job_skills_raw = extract_skills(job_description)
 
     if not job_skills_raw:
@@ -70,7 +88,7 @@ def analyze_skill_gap(resume_text, job_description):
     matched = []
     missing = []
 
-    # 🔥 STEP 3: Compare job → resume
+    # compare job → resume
     for job_skill in job_skills:
 
         if is_skill_matched(job_skill, resume_skills, resume_text):
@@ -79,23 +97,33 @@ def analyze_skill_gap(resume_text, job_description):
             missing.append(job_skill)
 
 
-    # 🔥 STEP 4: Match %
-    if len(job_skills) == 0:
+    # add experience-based gaps
+    experience_gap = detect_experience_gap(resume_text, job_description)
+
+    for gap in experience_gap:
+        if gap not in missing:
+            missing.append(gap)
+
+
+    # match percentage
+    total_required = len(job_skills) + len(experience_gap)
+
+    if total_required == 0:
         match_score = 0
     else:
-        match_score = (len(matched) / len(job_skills)) * 100
+        match_score = (len(matched) / total_required) * 100
 
 
-    # 🔥 DEBUG
+    # debug logs
     print("\n--- SKILL GAP DEBUG ---")
     print("Resume skills:", resume_skills[:20])
     print("Job skills:", job_skills[:20])
     print("Matched:", matched)
     print("Missing:", missing)
+    print("Experience gap:", experience_gap)
     print("------------------------\n")
 
 
-    # 🔥 STEP 5: Return structured result
     return {
         "match_score": round(match_score, 2),
         "matched_skills": matched,

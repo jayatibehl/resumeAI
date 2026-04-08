@@ -19,6 +19,33 @@ export default function JobMatches() {
     window.location.reload(); // simple reset
   };
 
+  // 🔥 APPLY FUNCTION (ADDED)
+  const handleApply = async (jobId) => {
+    try {
+      const token = localStorage.getItem("token");
+
+      const res = await fetch("http://127.0.0.1:5000/api/jobs/apply", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`
+        },
+        body: JSON.stringify({ job_id: jobId })
+      });
+
+      const data = await res.json();
+
+      if (res.ok) {
+        alert("Applied successfully ✅");
+      } else {
+        alert(data.error || data.message || "Failed to apply");
+      }
+
+    } catch (err) {
+      alert("Server error");
+    }
+  };
+
   return (
     <div className="main-content">
 
@@ -83,8 +110,24 @@ export default function JobMatches() {
               </p>
 
               <div className="big-number">
-              {Number(job.match_score).toFixed(2)}%
+                {Number(job.match_score).toFixed(2)}%
               </div>
+
+              {/* 🔥 APPLY BUTTON (ADDED) */}
+              <button
+                onClick={() => handleApply(job.job_id)}
+                style={{
+                  marginTop: "10px",
+                  padding: "6px 12px",
+                  background: "#28a745",
+                  border: "none",
+                  borderRadius: "5px",
+                  color: "white",
+                  cursor: "pointer"
+                }}
+              >
+                Apply
+              </button>
 
             </div>
           ))}

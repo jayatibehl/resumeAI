@@ -14,7 +14,7 @@ body {
 }
 
 /* Layout */
-.dashboard-container {
+.dashboard-container{
   display: flex;
   height: 100vh;
 }
@@ -198,4 +198,87 @@ body {
   color: #22c55e;
   font-size: 12px;
   font-weight: bold;
+}
+
+.analysis-loader {
+  text-align: center;
+  margin-top: 20px;
+}
+
+.spinner {
+  width: 50px;
+  height: 50px;
+  border: 5px solid #333;
+  border-top: 5px solid #5b6cff;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin: 0 auto 15px;
+}
+
+@keyframes spin {
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+.steps p {
+  margin: 6px 0;
+  color: #0349b2 !important;
+  opacity: 0.5;
+  transition: 0.3s;
+}
+
+.steps p.active {
+  color: #1228f0 !important;
+  opacity: 1;
+}
+
+/* ===== TITLE ===== */
+.dashboard-title {
+  font-size: 32px;
+  margin-bottom: 30px;
+}
+
+/* ===== CARD ===== */
+.card {
+  background: #1e1e2f;
+  padding: 25px;
+  border-radius: 12px;
+  margin-bottom: 25px;
+}
+
+/* ===== INPUT ===== */
+.input {
+  width: 100%;
+  padding: 12px;
+  margin-bottom: 15px;
+  border-radius: 6px;
+  border: none;
+}
+
+/* ===== TEXTAREA ===== */
+.textarea {
+  width: 100%;
+  padding: 12px;
+  margin-bottom: 15px;
+  border-radius: 6px;
+  border: none;
+}
+
+/* ===== BUTTON ===== */
+.btn {
+  background: #6c63ff;
+  color: white;
+  padding: 10px 20px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+/* ===== JOB CARD ===== */
+.job-card {
+  background: #2a2a40;
+  padding: 15px;
+  border-radius: 8px;
+  margin-top: 10px;
 }

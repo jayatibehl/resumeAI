@@ -9,6 +9,12 @@ export default function AdminDashboard() {
 
   const token = localStorage.getItem("token");
 
+  // ✅ ADDED LOGOUT FUNCTION
+  const handleLogout = () => {
+    localStorage.removeItem("token");
+    window.location.href = "/";
+  };
+
   useEffect(() => {
     fetchData();
   }, []);
@@ -192,7 +198,6 @@ export default function AdminDashboard() {
             Jobs ({jobs.length})
           </button>
 
-          {/* ✅ NEW TAB */}
           <button
             onClick={() => {
               setActiveTab("bannedJobs");
@@ -204,6 +209,17 @@ export default function AdminDashboard() {
             }}
           >
             Banned Jobs ({bannedJobs.length})
+          </button>
+
+          {/* ✅ ADDED LOGOUT TAB */}
+          <button
+            onClick={handleLogout}
+            style={{
+              ...btn,
+              background: "#ef4444"
+            }}
+          >
+            Logout
           </button>
         </div>
 
@@ -257,7 +273,6 @@ export default function AdminDashboard() {
                   <p><b>Description:</b> {job.description}</p>
                   <p><b>Recruiter:</b> {job.recruiter_email}</p>
 
-                  {/* ✅ BAN BUTTON */}
                   <button onClick={() => banJob(job.id)} style={banBtn}>
                     Ban Job
                   </button>
@@ -266,7 +281,6 @@ export default function AdminDashboard() {
             </>
           )}
 
-          {/* ✅ BANNED JOBS VIEW */}
           {activeTab === "bannedJobs" && (
             <>
               <h3 style={{ textAlign: "center" }}>Banned Jobs</h3>
