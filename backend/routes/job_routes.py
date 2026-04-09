@@ -210,7 +210,7 @@ def matched_candidates():
     return jsonify(results)
 
 
-# ------------------ APPLY TO JOB (FIXED ONLY) ------------------
+# ------------------ APPLY TO JOB ------------------
 @job_bp.route("/apply", methods=["POST"])
 @token_required
 def apply_job():
@@ -234,7 +234,6 @@ def apply_job():
     job_title = job["title"]
     recruiter_email = job["recruiter_email"]
 
-    # 🔥 prevent duplicate applications
     cursor.execute("""
         SELECT * FROM applications
         WHERE candidate_email = ? AND job_title = ?
@@ -253,3 +252,32 @@ def apply_job():
     conn.close()
 
     return jsonify({"message": "Applied successfully"})
+
+
+# ------------------ GET APPLICATIONS (FIX ADDED) ------------------
+@job_bp.route("/applications", methods=["GET"])
+def get_applications():
+    try:
+        job_title = request.args.get("job_title")
+
+        conn = get_db()
+        cursor = conn.cursor()
+
+        if job_title:
+            cursor.execute(
+                "SELECT * FROM applications WHERE job_title = ?",
+                (job_title,)
+            )
+        else:
+            cursor.execute("SELECT * FROM applications")
+
+        rows = cursor.fetchall()
+        applications = [dict(row) for row in rows]
+
+        conn.close()
+
+        return jsonify(applications), 200
+
+    except Exception as e:
+        print("APPLICATION ERROR:", str(e))
+        return jsonify({"error": "Failed to fetch applications"}), 500
