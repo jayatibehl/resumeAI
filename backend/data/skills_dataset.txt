@@ -1,0 +1,224 @@
+python
+java
+c
+c++
+c#
+javascript
+typescript
+go
+golang
+rust
+kotlin
+swift
+scala
+r
+matlab
+dart
+bash
+shell scripting
+powershell
+assembly
+objective-c
+groovy
+fortran
+cobol
+perl
+
+data structures
+algorithms
+object oriented programming
+functional programming
+multithreading
+concurrency
+parallel computing
+distributed systems
+system design
+operating systems
+computer networks
+database management
+compiler design
+software testing
+design patterns
+software architecture
+microservices
+rest api
+graphql
+
+html
+css
+sass
+bootstrap
+tailwind css
+material ui
+chakra ui
+
+react
+angular
+vue
+svelte
+next.js
+nuxt.js
+
+node.js
+express.js
+fastapi
+flask
+django
+spring
+spring boot
+hibernate
+asp.net
+laravel
+ruby on rails
+
+pandas
+numpy
+scipy
+scikit-learn
+statsmodels
+
+tensorflow
+pytorch
+keras
+jax
+
+machine learning
+deep learning
+neural networks
+transformers
+natural language processing
+computer vision
+reinforcement learning
+
+opencv
+nltk
+spacy
+gensim
+huggingface
+sentence transformers
+
+sql
+mysql
+postgresql
+sqlite
+oracle database
+mongodb
+cassandra
+redis
+dynamodb
+neo4j
+firebase
+
+apache spark
+apache kafka
+apache hadoop
+airflow
+databricks
+
+docker
+kubernetes
+helm
+terraform
+ansible
+jenkins
+github actions
+gitlab ci
+
+git
+github
+gitlab
+bitbucket
+
+linux
+unix
+ubuntu
+red hat
+
+aws
+azure
+google cloud
+aws lambda
+aws ec2
+aws s3
+aws rds
+aws cloudformation
+
+gcp compute engine
+gcp bigquery
+gcp cloud functions
+
+azure functions
+azure devops
+azure storage
+
+tableau
+power bi
+looker
+
+excel
+advanced excel
+
+etl pipelines
+data warehousing
+data pipelines
+
+feature engineering
+model deployment
+mlops
+model evaluation
+hyperparameter tuning
+
+nlp preprocessing
+tokenization
+text classification
+named entity recognition
+sentiment analysis
+
+image classification
+object detection
+image segmentation
+
+cybersecurity
+penetration testing
+network security
+cryptography
+authentication
+authorization
+oauth
+jwt
+
+unit testing
+integration testing
+test automation
+
+selenium
+cypress
+playwright
+pytest
+jest
+mocha
+
+android development
+ios development
+react native
+flutter
+
+game development
+unity
+unreal engine
+
+blockchain
+smart contracts
+solidity
+web3
+
+edge computing
+internet of things
+embedded systems
+raspberry pi
+arduino
+
+performance optimization
+memory management
+profiling
+debugging

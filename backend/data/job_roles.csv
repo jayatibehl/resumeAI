@@ -1,0 +1,140 @@
+role,description
+Software Engineer,software development programming algorithms data structures debugging git python java c++ backend development system design
+Backend Engineer,backend development api design microservices distributed systems node.js spring boot flask django databases authentication scalability
+Frontend Engineer,frontend development html css javascript react angular vue responsive design browser apis ui development
+Full Stack Engineer,frontend backend development react node.js databases authentication rest apis full stack web architecture
+Web Developer,web application development html css javascript backend integration responsive design frameworks
+Java Developer,java programming spring boot backend development microservices rest api database integration
+Python Developer,python programming flask django backend development automation scripting data processing
+C++ Developer,c++ programming systems development algorithms memory management performance optimization
+C# Developer,c# programming .net development application architecture backend services
+Go Developer,go programming backend development microservices distributed systems performance optimization
+Rust Developer,rust programming systems development memory safety concurrent programming
+Node.js Developer,node.js backend development express apis authentication databases microservices
+React Developer,react javascript frontend development ui components state management web interfaces
+Angular Developer,angular typescript frontend development web applications responsive ui frameworks
+Vue.js Developer,vue javascript frontend development web interfaces components state management
+Mobile App Developer,mobile app development android ios kotlin swift react native flutter ui apis
+Android Developer,android development kotlin java android sdk mobile ui rest api firebase debugging
+iOS Developer,ios development swift objective-c ios sdk mobile ui networking application lifecycle
+Flutter Developer,flutter mobile development dart cross platform apps ui components api integration
+React Native Developer,react native mobile apps javascript cross platform development ui frameworks
+Game Developer,game development c++ unity unreal engine gameplay physics rendering systems
+Unity Developer,unity engine c# game development physics animation rendering mechanics
+Unreal Engine Developer,unreal engine c++ game programming graphics rendering gameplay systems
+Graphics Engineer,computer graphics rendering shaders gpu programming opengl directx
+AR VR Developer,augmented reality virtual reality unity unreal 3d graphics spatial computing
+Embedded Systems Engineer,embedded systems firmware microcontrollers c c++ hardware communication debugging
+Firmware Engineer,firmware development embedded c microcontrollers hardware drivers real time systems
+IoT Engineer,internet of things sensors device communication embedded systems cloud integration
+Robotics Engineer,robotics python ros computer vision motion planning sensor integration
+Autonomous Systems Engineer,autonomous systems robotics perception planning sensor fusion
+Drone Software Engineer,drone control systems navigation algorithms embedded systems sensors
+Computer Vision Engineer,computer vision image processing opencv deep learning object detection segmentation
+NLP Engineer,natural language processing transformers text classification sentiment analysis tokenization
+AI Engineer,artificial intelligence machine learning deep learning neural networks model deployment
+Machine Learning Engineer,ml pipelines python scikit learn tensorflow pytorch feature engineering model deployment
+Deep Learning Engineer,deep neural networks pytorch tensorflow cnn rnn transformers gpu training
+Generative AI Engineer,generative ai llm transformers prompt engineering diffusion models
+Prompt Engineer,llm prompt engineering generative ai evaluation pipelines language models
+AI Research Engineer,artificial intelligence research neural networks deep learning algorithms experimentation
+Data Scientist,data analysis python pandas numpy machine learning statistics predictive modeling
+Data Analyst,sql python data visualization dashboards statistics reporting
+Business Data Analyst,business analytics sql dashboards reporting kpi metrics visualization
+Product Data Analyst,product analytics user behavior metrics experimentation dashboards
+Growth Data Analyst,growth analytics funnel analysis experimentation metrics dashboards
+Analytics Engineer,data modeling analytics pipelines dashboards sql transformation
+Data Engineer,data pipelines etl spark hadoop kafka distributed processing data warehousing
+Big Data Engineer,large scale data processing spark hadoop distributed computing data pipelines
+Streaming Data Engineer,real time streaming kafka spark streaming event pipelines distributed systems
+ETL Engineer,etl pipelines data transformation workflows data ingestion data warehouse loading
+Data Platform Engineer,data platforms orchestration pipelines distributed storage data systems
+ML Ops Engineer,ml deployment docker kubernetes monitoring ci cd model lifecycle
+Model Deployment Engineer,deploy machine learning models docker kubernetes cloud services
+Feature Engineering Engineer,feature engineering data pipelines model input optimization
+Model Evaluation Engineer,model evaluation metrics validation experiments machine learning
+Visualization Engineer,data visualization dashboards charts analytics reporting
+Business Intelligence Engineer,bi systems dashboards data warehouse reporting analytics
+Cloud Engineer,cloud infrastructure aws azure gcp containers networking security
+Cloud Architect,cloud architecture distributed systems scalability infrastructure design
+AWS Engineer,aws services ec2 s3 rds lambda cloud infrastructure
+Azure Engineer,azure cloud infrastructure devops storage compute networking
+GCP Engineer,google cloud compute bigquery cloud functions infrastructure
+DevOps Engineer,ci cd docker kubernetes automation terraform monitoring pipelines
+Site Reliability Engineer,reliability engineering monitoring incident response scalability automation
+Platform Engineer,internal developer platforms infrastructure tooling automation
+Infrastructure Engineer,infrastructure automation networking storage virtualization monitoring
+Serverless Engineer,serverless computing cloud functions event driven architecture
+Edge Computing Engineer,edge computing distributed processing low latency systems
+Network Engineer,network architecture routing switching tcp ip network protocols
+Network Security Engineer,network security firewalls vpn intrusion detection monitoring
+Cybersecurity Analyst,security monitoring threat analysis incident response vulnerability scanning
+Security Engineer,application security encryption authentication authorization secure systems
+Application Security Engineer,secure coding threat modeling vulnerability testing
+Penetration Tester,ethical hacking vulnerability testing exploitation security auditing
+Cryptography Engineer,cryptography encryption protocols secure communication authentication
+Blockchain Developer,blockchain smart contracts ethereum web3 decentralized applications
+Smart Contract Developer,solidity blockchain contracts decentralized finance protocols
+Web3 Developer,decentralized applications blockchain ethereum wallets smart contracts
+Database Administrator,database management performance tuning backup replication security
+Database Engineer,database architecture schema design indexing optimization
+SQL Developer,sql queries stored procedures reporting database logic
+NoSQL Engineer,mongodb cassandra redis distributed databases high availability
+Search Engineer,search engines ranking algorithms indexing information retrieval
+Recommendation Systems Engineer,recommendation algorithms collaborative filtering ranking systems
+Information Retrieval Engineer,search indexing ranking natural language search systems
+Compiler Engineer,programming language compilers parsing optimization code generation
+Runtime Systems Engineer,runtime systems memory management garbage collection execution engines
+Distributed Systems Engineer,distributed computing consensus algorithms fault tolerance
+High Performance Computing Engineer,parallel computing gpu computing optimization
+GPU Engineer,gpu computing cuda parallel algorithms performance optimization
+Scientific Software Engineer,scientific computing simulation modeling numerical algorithms
+Research Software Engineer,experimental software prototypes algorithms research systems
+Automation Engineer,automation scripts pipelines workflow systems scripting
+QA Engineer,software testing unit tests integration testing automation
+Test Automation Engineer,selenium cypress playwright automated testing frameworks
+Performance Engineer,performance testing load testing scalability benchmarking
+Reliability Engineer,system reliability monitoring fault tolerance high availability
+Release Engineer,software release pipelines version control build automation
+Build Engineer,build systems dependency management ci pipelines
+Package Engineer,software packaging distribution dependency resolution
+Developer Advocate,developer tools sdk documentation community support
+Technical Support Engineer,technical troubleshooting debugging systems support
+Solutions Engineer,technical solutions integration architecture deployments
+Integration Engineer,api integration systems connectivity pipelines
+API Engineer,api design rest services authentication rate limiting
+Middleware Engineer,messaging systems integration middleware distributed services
+Event Driven Systems Engineer,event driven architecture kafka messaging streaming systems
+Linux Engineer,linux administration shell scripting system monitoring
+Windows Systems Engineer,windows servers powershell active directory system management
+Systems Engineer,operating systems infrastructure performance tuning integration
+Hardware Engineer,electronic hardware design embedded circuits testing
+Embedded Linux Engineer,embedded linux firmware drivers hardware integration
+Bioinformatics Engineer,bioinformatics algorithms genomics pipelines biological data analysis
+Quantitative Developer,quantitative finance algorithms trading systems modeling
+Algorithm Engineer,algorithm development optimization computational problem solving
+Navigation Engineer,gps navigation algorithms sensor fusion localization
+SLAM Engineer,slam algorithms robotics mapping localization perception
+Audio Engineer,audio signal processing speech recognition sound analysis
+Speech Recognition Engineer,speech to text acoustic models language models
+Speech Synthesis Engineer,text to speech neural speech generation
+Conversational AI Engineer,chatbots dialogue systems language understanding llm
+Knowledge Graph Engineer,knowledge graphs semantic search graph databases ontology
+Ontology Engineer,ontology modeling semantic web knowledge representation
+Semantic Web Engineer,rdf sparql linked data semantic systems
+Unity Graphics Engineer,graphics rendering shaders gpu programming unity
+Simulation Engineer,simulation systems modeling physics computation
+Game Physics Engineer,game physics engines collision systems gameplay physics
+VR Interaction Engineer,virtual reality interaction systems ui gestures spatial computing
+AR Interaction Engineer,augmented reality user interaction spatial mapping
+Data Warehouse Engineer,data warehouses snowflake bigquery redshift analytics
+Data Governance Engineer,data governance data quality compliance pipelines
+Experimentation Engineer,a b testing experimentation frameworks metrics analysis
+Monitoring Engineer,system monitoring observability metrics alerting
+Observability Engineer,logging tracing metrics observability systems
+Log Analytics Engineer,log analysis monitoring distributed systems debugging
+CI CD Engineer,continuous integration deployment pipelines automation
+Infrastructure Automation Engineer,infrastructure automation terraform ansible scripting
+Cloud Security Engineer,cloud security identity access management encryption
+Identity Engineer,identity management authentication authorization oauth jwt
+Access Management Engineer,access control iam authentication security policies
